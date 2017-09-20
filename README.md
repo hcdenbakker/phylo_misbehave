@@ -35,4 +35,4 @@ multifasta without homoplasious sites
 
 tree based on homoplasious site filtered dataset
 
-multifasta with prophage/phage related snps filtered + tree
+multifasta with prophage/phage related snps filtered + tree (using prophage and virus database found here: http://phast.wishartlab.com/Download.html)
