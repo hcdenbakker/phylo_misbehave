@@ -1,5 +1,5 @@
 # phylo_misbehave
-Pipeline to infer SNP-dense regions and the influence filtering strategies. Work in progress, hence the bare bone description! 
+Pipeline to infer SNP-dense regions and the influence filtering strategies. Work in progress, hence the bare bones description! 
 
 Requirements:
 
