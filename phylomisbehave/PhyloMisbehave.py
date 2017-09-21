@@ -1,20 +1,22 @@
-from sys import argv
+import matplotlib as mpl
+mpl.use('Agg') # stops the need for X11
+import matplotlib.pyplot as plt
+
 import pyximport
 from ete3 import Tree
 import os
 import subprocess
+import logging
+import pkg_resources
 import seaborn as sns
-import matplotlib as mpl
-mpl.use('Agg') # stops the need for X11
-import matplotlib.pyplot as plt
-from homoplasies import find_homoplasious_sites
 from Bio import SeqIO
 from Bio.Blast.Applications import NcbiblastpCommandline
 from Bio import SearchIO
 pyximport.install()
+
+from phylomisbehave.Homoplasies import find_homoplasious_sites
 import findSNPs
-import logging
-import pkg_resources
+
 
 
 #todo: list which accessions are affected by clusters/homoplasy, check if they are found in monopyletic group

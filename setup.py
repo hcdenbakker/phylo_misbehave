@@ -2,6 +2,7 @@ import os
 import shutil
 import sys
 import glob
+from Cython.Build import cythonize
 from setuptools import setup, find_packages
 
 def read(fname):
@@ -18,9 +19,10 @@ setup(
 	long_description=read('README.md'),
     packages = find_packages(),
 	package_data={'phylomisbehave': ['example_data/*', 'databases/*']},
+	ext_modules=cythonize("phylomisbehave/*.pyx"),
     author='Henk den Bakker',
     author_email='xxxxxxxxxxxxx',
-    url='https://github.com/sanger-pathogens/saffrontree',
+    url='https://github.com/hcdenbakker/phylo_misbehave',
     scripts=glob.glob('scripts/*'),
     test_suite='nose.collector',
     tests_require=['nose >= 1.3'],
