@@ -15,7 +15,7 @@ from Bio import SearchIO
 pyximport.install()
 
 from phylomisbehave.Homoplasies import find_homoplasious_sites
-import phylomisbehave.findSNPs
+import phylomisbehave.findSNPs as findSNPs
 
 
 
@@ -30,9 +30,13 @@ class PhyloMisbehave:
 		self.output_prefix = options.output_prefix
 		self.gff_file = options.gff_file
 		self.faa_file = options.faa_file
+		self.threads = options.threads
+		self.evalue = options.evalue
+		self.min_snps = options.min_snps
 		
 		# Todo: make this kind of thing an option
 		self.sliding_window_size = 1000
+		self.feature_filter = 'CDS'
 		
 		self.verbose = options.verbose
 		self.logger = logging.getLogger(__name__)
@@ -81,7 +85,7 @@ class PhyloMisbehave:
 		geneswithSNPs=[]
 		with open(gff, 'r') as featurefile:
 			for line in featurefile:
-				if (len(line.split('\t')) > 5) and line.split('\t')[2] == 'CDS':
+				if (len(line.split('\t')) > 5) and line.split('\t')[2] == self.feature_filter:
 					SNPS = len(set(positions) & set(range(int(line.split('\t')[3])-1, int(line.split('\t')[4]))))
 					if SNPS > 0:
 						geneswithSNPs.append(line.split('\t')[8].split(';')[0].lstrip('ID='))
@@ -91,7 +95,7 @@ class PhyloMisbehave:
 		GeneDict={}
 		with open(gff, 'r') as featurefile:
 			for line in featurefile:
-				if (len(line.split('\t')) > 5) and line.split('\t')[2] == 'CDS':
+				if (len(line.split('\t')) > 5) and line.split('\t')[2] == self.feature_filter:
 					GeneDict[line.split('\t')[8].split(';')[0].lstrip('ID=')] = (int(line.split('\t')[3])-1,\
 							int(line.split('\t')[4])-1)
 		return GeneDict
@@ -101,20 +105,27 @@ class PhyloMisbehave:
 		alignment = findSNPs.parse_fasta(open(self.multifasta))
 		ref = next(alignment)[1]
 		n = len(ref)
-		alignment = findSNPs.parse_fasta(open(self.multifasta))
+		self.logger.warning('Reference length:'+str(n))
 		
+		alignment = findSNPs.parse_fasta(open(self.multifasta))
 		gff = self.gff_file
+		
+		self.logger.warning('Finding variable sites in the multi-FASTA alignment')
 		varsites = findSNPs.findSNPs(ref, alignment)
 		alignment = findSNPs.parse_fasta(open(self.multifasta))
 		
 		snps_ordered, id_snps = findSNPs.setupSNPdict(varsites, alignment)
 		positions = [i for i in snps_ordered]
+		
+		self.logger.warning('Calculating sliding windows of size: '+str(self.sliding_window_size))
 		window_count, window_start = self.sliding_window(n, positions)
-		highsnps = [(window_start[i],j) for i,j in enumerate(window_count) if j > 5]
+		
+		self.logger.warning('Filtering out sliding widows with less than this many SNPs: '+str(self.min_snps))
+		highsnps = [(window_start[i],j) for i,j in enumerate(window_count) if j > self.min_snps]
 		filtered_positions = set(positions)
 		
 		for i in highsnps:
-			filtered_positions = filtered_positions - set(range(i[0], i[0]+1000))
+			filtered_positions = filtered_positions - set(range(i[0], i[0]+self.sliding_window_size))
 		alignment = findSNPs.parse_fasta(open(self.multifasta))
 		snps_ordered_filt, id_snps_filt = findSNPs.setupSNPdict(sorted(filtered_positions), alignment)
 		with open(str(self.output_prefix)+'.unfiltered.fasta', 'w') as fp:
@@ -124,6 +135,9 @@ class PhyloMisbehave:
 				else:
 					fp.write('>'+ i +'\n')
 					fp.write(''.join(id_snps[i])+'\n')
+					
+		self.logger.warning('Running FastTree command: '+self.fasttree_exec+' -nt '+str(self.output_prefix)+'.unfiltered.fasta > '+str(self.output_prefix)+'.unfiltered.nwk')
+		
 		subprocess.call([self.fasttree_exec+' -nt '+str(self.output_prefix)+'.unfiltered.fasta > '+str(self.output_prefix)+'.unfiltered.nwk'], stdout=subprocess.DEVNULL, shell=True)
 		with open(str(self.output_prefix)+'.peakfiltered.fasta', 'w') as fp:
 			for i in id_snps_filt:
@@ -132,6 +146,8 @@ class PhyloMisbehave:
 				else:
 					fp.write('>'+ i +'\n')
 					fp.write(''.join(id_snps_filt[i])+'\n')
+					
+		self.logger.warning('Running FastTree command: '+ self.fasttree_exec+' -nt '+str(self.output_prefix)+'.peakfiltered.fasta > '+str(self.output_prefix)+'.peakfiltered.nwk')			
 		subprocess.call([self.fasttree_exec+' -nt '+str(self.output_prefix)+'.peakfiltered.fasta > '+str(self.output_prefix)+'.peakfiltered.nwk'], stdout=subprocess.DEVNULL, shell=True)
 		treeETE = Tree(str(self.output_prefix)+'.unfiltered.nwk')
 		alignment = [(x,y) for (x,y) in findSNPs.parse_fasta(open(str(self.output_prefix)+'.unfiltered.fasta'))]
@@ -164,9 +180,10 @@ class PhyloMisbehave:
 					self.logger.warning(gene.id)
 					with open("temp.fasta", "w") as output_handle:
 						SeqIO.write(gene, output_handle, 'fasta')
-						
-					blastp_cline = NcbiblastpCommandline(query="temp.fasta", db=pkg_resources.resource_filename(__name__, 'databases/prophage_virus.db'), evalue=1.1E-11,
-														 outfmt=5, out="test.xml", max_hsps=1, max_target_seqs=1, num_threads=4)
+					
+					self.logger.warning('Blasting againts prophage database')
+					blastp_cline = NcbiblastpCommandline(query="temp.fasta", db=pkg_resources.resource_filename(__name__, 'databases/prophage_virus.db'), evalue=self.evalue,
+														 outfmt=5, out="test.xml", max_hsps=1, max_target_seqs=1, num_threads=self.threads)
 					blastp_cline()
 					alignments = SearchIO.parse('test.xml', 'blast-xml')
 					for alignment in alignments:

@@ -1,6 +1,10 @@
 # phylo_misbehave
 Pipeline to infer SNP-dense regions and the influence of different filtering strategies. Work in progress, hence the bare bones description! I am just sharing this in case it may be useful to anyone.
 
+
+
+
+# Installation
 Requirements:
 
 -Python 3 
@@ -13,10 +17,6 @@ Requirements:
 
 -NCBI blast
 
-
-
-
-# Installation
 
 ## Debian Testing/ Ubuntu 16.04
 These instructions assume you have root permissions:
@@ -33,7 +33,7 @@ Install [Docker](https://www.docker.com/).  We have a docker container which get
 docker run --rm -it -v /home/ubuntu/data:/data hcdenbakker/phylo_misbehave your_multi_fasta.fasta prefix_for_output_files gff_file.gff faa_file.faa
 ```
 
-### How to use:
+# How to use:
 ```
 usage: phylomisbehave [options] your_multi_fasta.fasta prefix_for_output_files gff_file.gff faa_file.faa
 
@@ -47,6 +47,7 @@ positional arguments:
 
 optional arguments:
   -h, --help     show this help message and exit
+  --threads, -t  Threads (default: 1)
   --verbose, -v  Turn on more debugging output (default: False)
   --version      show program's version number and exit
 ```
