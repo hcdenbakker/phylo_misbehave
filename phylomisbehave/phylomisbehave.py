@@ -34,11 +34,37 @@ class PhyloMisbehave:
 			self.logger.setLevel(logging.DEBUG)
 		else:
 			self.logger.setLevel(logging.ERROR)
+			
+		self.fasttree_exec = self.choose_executable(['FastTree','fasttree'])
+		
+	def choose_executable(self,list_of_executables):
+		for executable in list_of_executables:
+			if self.which(executable) != None:
+				return executable
+			  
+		return ""
 
-	def sliding_window(self,genome_size, positions):
+	def which(self, program):
+		executable = program.split(" ")
+		program = executable[0]
+		def is_exe(fpath):
+			return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+		fpath, fname = os.path.split(program)
+		if fpath:
+			if is_exe(program):
+				return program
+		else:
+			for path in os.environ["PATH"].split(os.pathsep):
+				exe_file = os.path.join(path, program)
+				if is_exe(exe_file):
+					return exe_file
+				
+		return None
+
+	def sliding_window(self, genome_size, positions):
 	    window_count = []
 	    window_start = []
-	    #print('starting sliding window')
+	    #self.logger.warning('starting sliding window')
 	    for i in range(0, genome_size - (self.sliding_window_size -1), self.sliding_window_size):
 	        window_start.append(i)
 	        window_count.append(len(set(range(i, i+(self.sliding_window_size -1)))& set(positions)))
@@ -55,7 +81,7 @@ class PhyloMisbehave:
 	                    geneswithSNPs.append(line.split('\t')[8].split(';')[0].lstrip('ID='))
 	    return geneswithSNPs
 	
-	def FeaturesDict(self, gff):
+	def featuresdict(self, gff):
 	    GeneDict={}
 	    with open(gff, 'r') as featurefile:
 	        for line in featurefile:
@@ -70,14 +96,17 @@ class PhyloMisbehave:
 	    ref = next(alignment)[1]
 	    n = len(ref)
 	    alignment = findSNPs.parse_fasta(open(self.multifasta))
+		
 	    gff = self.gff_file
 	    varsites = findSNPs.findSNPs(ref, alignment)
 	    alignment = findSNPs.parse_fasta(open(self.multifasta))
+		
 	    snps_ordered, id_snps = findSNPs.setupSNPdict(varsites, alignment)
 	    positions = [i for i in snps_ordered]
 	    window_count, window_start = self.sliding_window(n, positions)
 	    highsnps = [(window_start[i],j) for i,j in enumerate(window_count) if j > 5]
 	    filtered_positions = set(positions)
+		
 	    for i in highsnps:
 	        filtered_positions = filtered_positions - set(range(i[0], i[0]+1000))
 	    alignment = findSNPs.parse_fasta(open(self.multifasta))
@@ -85,20 +114,20 @@ class PhyloMisbehave:
 	    with open(str(self.output_prefix)+'.unfiltered.fasta', 'w') as fp:
 	        for i in id_snps:
 	            if id_snps[i].count('-') > round(len(id_snps[i])*0.45):
-	                print(str(i)+' not in peak fasta!')
+					self.logger.warning(str(i)+' not in peak fasta!')
 	            else:
 	                fp.write('>'+ i +'\n')
 	                fp.write(''.join(id_snps[i])+'\n')
-	    subprocess.call(['FastTree -nt '+str(self.output_prefix)+'.unfiltered.fasta > '+str(self.output_prefix)+'.unfiltered.nwk']
+	    subprocess.call([self.fasttree_exec+' -nt '+str(self.output_prefix)+'.unfiltered.fasta > '+str(self.output_prefix)+'.unfiltered.nwk']
 	                    , stdout=subprocess.DEVNULL, shell=True)
 	    with open(str(self.output_prefix)+'.peakfiltered.fasta', 'w') as fp:
 	        for i in id_snps_filt:
 	            if id_snps_filt[i].count('-') > round(len(id_snps_filt[i])*0.45):
-	                print(str(i)+' not in fasta!')
+					self.logger.warning(str(i)+' not in fasta!')
 	            else:
 	                fp.write('>'+ i +'\n')
 	                fp.write(''.join(id_snps_filt[i])+'\n')
-	    subprocess.call(['FastTree -nt '+str(self.output_prefix)+'.peakfiltered.fasta > '+str(self.output_prefix)+'.peakfiltered.nwk']
+	    subprocess.call([self.fasttree_exec+' -nt '+str(self.output_prefix)+'.peakfiltered.fasta > '+str(self.output_prefix)+'.peakfiltered.nwk']
 	                    , stdout=subprocess.DEVNULL, shell=True)
 	    treeETE = Tree(str(self.output_prefix)+'.unfiltered.nwk')
 	    alignment = [(x,y) for (x,y) in findSNPs.parse_fasta(open(str(self.output_prefix)+'.unfiltered.fasta'))]
@@ -111,11 +140,11 @@ class PhyloMisbehave:
 	    with open(str(self.output_prefix)+'.nonhomoplasious.fasta', 'w') as fp:
 	        for i in id_snps_nonhom:
 	            if id_snps_nonhom[i].count('-') > round(len(id_snps_nonhom[i])*0.45):
-	                print(str(i)+' not in non homoplasious fasta!')
+					self.logger.warning(str(i)+' not in non homoplasious fasta!')
 	            else:
 	                fp.write('>'+ i +'\n')
 	                fp.write(''.join(id_snps_nonhom[i])+'\n')
-	    subprocess.call(['FastTree -nt '+str(self.output_prefix)+'.nonhomoplasious.fasta > '+str(self.output_prefix)+'.nonhomoplasious.nwk']
+	    subprocess.call([self.fasttree_exec+' -nt '+str(self.output_prefix)+'.nonhomoplasious.fasta > '+str(self.output_prefix)+'.nonhomoplasious.nwk']
 	                    , stdout=subprocess.DEVNULL, shell=True)
 	
 	    peaks = set(positions) - set(filtered_positions)
@@ -125,11 +154,11 @@ class PhyloMisbehave:
 	    GenesWithclusteredSNPs = self.findFeatures(gff, homoplasious_sites)
 	    try:
 	        CodingGenes = SeqIO.parse(self.gff_file.rstrip('.gff') + '.faa', 'fasta')
-	        featuredict = self.FeaturesDict(gff)
+	        featuredict = self.featuresdict(gff)
 	        PhageGenes = []
 	        for gene in CodingGenes:
 	            if str(gene.id) in GenesWithclusteredSNPs:
-	                print(gene.id)
+	                self.logger.warning(gene.id)
 	                with open("temp.fasta", "w") as output_handle:
 	                    SeqIO.write(gene, output_handle, 'fasta')
 	                blastp_cline = NcbiblastpCommandline(query="temp.fasta", db="prophage_virus.db", evalue=1.1E-11,
@@ -140,7 +169,7 @@ class PhyloMisbehave:
 	                    for hit in alignment.hits:
 	                        if hit.id.startswith('PHAGE') or hit.id.startswith('PROPHAGE'):
 	                            PhageGenes.append(gene.id)
-	                            print(hit.id[0:75] + '...')
+								self.logger.warning(hit.id[0:75] + '...')
 	        phage_ranges = [featuredict[x] for x in PhageGenes]
 	        phagepositions = []
 	        for p in phage_ranges:
@@ -153,7 +182,7 @@ class PhyloMisbehave:
 	        sns.plt.plot(window_start, window_phage, 'go')
 	
 	    except FileNotFoundError:
-	        print('Can not find AA gene file; will not perform phage related gene scan. Please provide .faa file if you\n '
+	        self.logger.warning('Can not find AA gene file; will not perform phage related gene scan. Please provide .faa file if you\n '
 	              'want to perform this procedure. ')
 	
 	    sns.plt.plot(window_start, window_hom, 'ro')
