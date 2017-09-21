@@ -61,7 +61,7 @@ from collections import Counter
 # #a descendent of the current node
 #
 # #midpoint root tree with ETE 3
-# treeETE = Tree(argv[2])
+# treeETE = Tree(self.output_prefix)
 # R = treeETE.get_midpoint_outgroup()
 # treeETE.set_outgroup(R)
 # print(treeETE)

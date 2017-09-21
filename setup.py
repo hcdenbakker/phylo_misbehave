@@ -17,7 +17,7 @@ setup(
     description='PhyloMisbehave: infer SNP-dense regions and the influence of different filtering strategies',
 	long_description=read('README.md'),
     packages = find_packages(),
-	package_data={'phylomisbehave': ['example_data/*']},
+	package_data={'phylomisbehave': ['example_data/*', 'databases/*']},
     author='Henk den Bakker',
     author_email='xxxxxxxxxxxxx',
     url='https://github.com/sanger-pathogens/saffrontree',
