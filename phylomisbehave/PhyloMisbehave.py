@@ -15,7 +15,7 @@ from Bio import SearchIO
 pyximport.install()
 
 from phylomisbehave.Homoplasies import find_homoplasious_sites
-import findSNPs
+import phylomisbehave.findSNPs
 
 
 
