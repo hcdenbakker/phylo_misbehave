@@ -25,11 +25,10 @@ setup(
     test_suite='nose.collector',
     tests_require=['nose >= 1.3'],
     install_requires=[
-			'ete3 >= 3.0.0', 
+			'ete3', 
 			'cython',
 			'seaborn',
 			'matplotlib',
-			'dendropy >= 4.1.0',
 			'biopython >= 1.68'
        ],
     license='MIT',

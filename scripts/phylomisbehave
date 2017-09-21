@@ -18,11 +18,12 @@ except pkg_resources.DistributionNotFound:
 
 parser = argparse.ArgumentParser(
 	description = 'Infer SNP-dense regions and the influence of different filtering strategies',
-	usage = 'phylomisbehave [options] your_multi_fasta.fasta prefix_for_output_files gff_file.gff', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+	usage = 'phylomisbehave [options] your_multi_fasta.fasta prefix_for_output_files gff_file.gff faa_file.faa', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 	
 parser.add_argument('multifasta', help='MultiFASTA file' )
 parser.add_argument('output_prefix', help='Output prefix' )
 parser.add_argument('gff_file', help='GFF file')
+parser.add_argument('faa_file', help='FAA file corresponding to GFF file')
 parser.add_argument('--verbose','-v', action='store_true', help='Turn on more debugging output')
 parser.add_argument('--version', action='version', version=str(version))
 

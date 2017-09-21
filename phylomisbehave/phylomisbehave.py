@@ -14,6 +14,7 @@ from Bio import SearchIO
 pyximport.install()
 import findSNPs
 import logging
+import pkg_resources
 
 
 #todo: list which accessions are affected by clusters/homoplasy, check if they are found in monopyletic group
@@ -26,6 +27,9 @@ class PhyloMisbehave:
 		self.multifasta = options.multifasta
 		self.output_prefix = options.output_prefix
 		self.gff_file = options.gff_file
+		self.faa_file = options.faa_file
+		
+		# Todo: make this kind of thing an option
 		self.sliding_window_size = 1000
 		
 		self.verbose = options.verbose
@@ -153,7 +157,7 @@ class PhyloMisbehave:
 	            f.write(str(i) +'\n')
 	    GenesWithclusteredSNPs = self.findFeatures(gff, homoplasious_sites)
 	    try:
-	        CodingGenes = SeqIO.parse(self.gff_file.rstrip('.gff') + '.faa', 'fasta')
+	        CodingGenes = SeqIO.parse(self.faa_file, 'fasta')
 	        featuredict = self.featuresdict(gff)
 	        PhageGenes = []
 	        for gene in CodingGenes:
@@ -161,7 +165,8 @@ class PhyloMisbehave:
 	                self.logger.warning(gene.id)
 	                with open("temp.fasta", "w") as output_handle:
 	                    SeqIO.write(gene, output_handle, 'fasta')
-	                blastp_cline = NcbiblastpCommandline(query="temp.fasta", db="prophage_virus.db", evalue=1.1E-11,
+						
+	                blastp_cline = NcbiblastpCommandline(query="temp.fasta", db=pkg_resources.resource_filename(__name__, 'databases/prophage_virus.db'), evalue=1.1E-11,
 	                                                     outfmt=5, out="test.xml", max_hsps=1, max_target_seqs=1, num_threads=4)
 	                blastp_cline()
 	                alignments = SearchIO.parse('test.xml', 'blast-xml')
