@@ -1,7 +1,6 @@
 from Bio import Phylo
 from ete3 import Tree
 from io import StringIO
-from sys import argv
 from numpy import floor
 from collections import Counter
 #todo: write as class object with methods to get sites, consensus sequence, etc.
@@ -61,7 +60,7 @@ from collections import Counter
 # #a descendent of the current node
 #
 # #midpoint root tree with ETE 3
-# treeETE = Tree(argv[2])
+# treeETE = Tree(self.output_prefix)
 # R = treeETE.get_midpoint_outgroup()
 # treeETE.set_outgroup(R)
 # print(treeETE)

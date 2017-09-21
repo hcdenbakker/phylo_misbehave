@@ -1,0 +1,9 @@
+language: python
+python:
+  - "3.6"
+sudo: false
+install:
+  - "source ./travis_ci_setup.sh"
+script:
+  - "python3 -m unittest discover -s phylomisbehave/tests/ -p '*_test.py'"
+

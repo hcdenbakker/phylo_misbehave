@@ -1,0 +1,41 @@
+#!/usr/bin/env python3
+
+import argparse
+import sys
+import os
+import pkg_resources
+
+import warnings
+from Bio import BiopythonExperimentalWarning
+warnings.simplefilter('ignore', BiopythonExperimentalWarning)
+
+sys.path.append('../')
+sys.path.append('./')
+from  phylomisbehave.PhyloMisbehave import PhyloMisbehave
+
+'''The main entry point for running PhyloMisbehave. All the work is done in the classes.'''
+
+version = ''
+try:
+	version = pkg_resources.get_distribution("phylomisbehave").version
+except pkg_resources.DistributionNotFound:
+	version = 'x.y.z'
+
+parser = argparse.ArgumentParser(
+	description = 'Infer SNP-dense regions and the influence of different filtering strategies',
+	usage = 'phylomisbehave [options] your_multi_fasta.fasta prefix_for_output_files gff_file.gff faa_file.faa', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+	
+parser.add_argument('multifasta', help='MultiFASTA file' )
+parser.add_argument('output_prefix', help='Output prefix' )
+parser.add_argument('gff_file', help='GFF file')
+parser.add_argument('faa_file', help='FAA file corresponding to GFF file')
+parser.add_argument('--threads','-t', help='Number of threads', type=int, default = 1)
+parser.add_argument('--evalue','-e', help='Blast E-value', type=int, default = 1.1E-11)
+parser.add_argument('--min_snps','-m', help='Min SNPs in a sliding window to consider', type=int, default = 5)
+parser.add_argument('--verbose','-v', action='store_true', help='Turn on more debugging output')
+parser.add_argument('--version', action='version', version=str(version))
+
+options = parser.parse_args()
+
+phylomisbehave = PhyloMisbehave(options)
+phylomisbehave.run()
