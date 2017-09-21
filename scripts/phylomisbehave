@@ -4,6 +4,11 @@ import argparse
 import sys
 import os
 import pkg_resources
+
+import warnings
+from Bio import BiopythonExperimentalWarning
+warnings.simplefilter('ignore', BiopythonExperimentalWarning)
+
 sys.path.append('../')
 sys.path.append('./')
 from  phylomisbehave.PhyloMisbehave import PhyloMisbehave
