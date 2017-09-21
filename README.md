@@ -21,7 +21,7 @@ These instructions assume you have root permissions:
 
 ```
 sudo apt-get update -qq
-sudo apt-get install -y git python3 python3-setuptools python3-biopython python3-pip ncbi-blast+ gcc cython python3-dev fasttree
+sudo apt-get install -y git python3 python3-setuptools python3-biopython python3-pip ncbi-blast+ gcc cython3 python3-dev fasttree
 pip3 install git+git://github.com/hcdenbakker/phylo_misbehave.git
 ```
 
