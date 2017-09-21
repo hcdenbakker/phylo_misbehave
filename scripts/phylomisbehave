@@ -6,6 +6,8 @@ from ete3 import Tree
 import os
 import subprocess
 import seaborn as sns
+import matplotlib as mpl
+mpl.use('Agg') # stops the need for X11
 import matplotlib.pyplot as plt
 from homoplasies import find_homoplasious_sites
 from Bio import SeqIO
