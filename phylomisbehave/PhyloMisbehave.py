@@ -72,12 +72,11 @@ class PhyloMisbehave:
 		return None
 
 	def sliding_window(self, genome_size, positions):
-		window_count = []
-		window_start = []
-		#self.logger.warning('starting sliding window')
-		for i in range(0, genome_size - (self.sliding_window_size -1), self.sliding_window_size):
-			window_start.append(i)
-			window_count.append(len(set(range(i, i+(self.sliding_window_size -1)))& set(positions)))
+		window_count = [0] * int(genome_size/self.sliding_window_size)
+		window_start = [ w * self.sliding_window_size for w in range(0,len(window_count))]
+		# Calculate the position windows on the fly
+		for p in positions:
+			window_count[int(p/self.sliding_window_size)] +=1
 		return window_count, window_start
 	
 	
