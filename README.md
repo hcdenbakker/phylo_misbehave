@@ -1,5 +1,5 @@
 # phylo_misbehave
-Pipeline to infer SNP-dense regions and the influence filtering strategies. Work in progress, hence the bare bone description! 
+Pipeline to infer SNP-dense regions and the influence filtering strategies. Work in progress, hence the bare bones description! 
 
 Requirements:
 
@@ -23,7 +23,7 @@ gff file is used to do a scan of prophage/phage related genes in the reference g
 
 output:
 
-variable sites only multifasta (created with a partly rewitten version of https://github.com/hcdenbakker/PySnpSites)
+variable sites only multifasta (created with a partly rewitten version of https://github.com/bewt85/PySnpSites)
 
 tree based on unfiltered multifasta
 
@@ -35,4 +35,7 @@ multifasta without homoplasious sites
 
 tree based on homoplasious site filtered dataset
 
-multifasta with prophage/phage related snps filtered + tree
+multifasta with prophage/phage related snps filtered + tree (using prophage and virus database found here: http://phast.wishartlab.com/Download.html)
+
+list of SNPs in phage-related regions
+list of SNPs inferred to be homoplasious
